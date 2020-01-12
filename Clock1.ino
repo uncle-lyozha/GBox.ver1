@@ -121,7 +121,8 @@ void loop ()
      Serial.print(":");
      Serial.println(Rtc.GetDateTime().Second());
 
-     if (Rtc.GetDateTime().Minute() >= 30) {
+     if (Rtc.GetDateTime().Hour() >= 12) {
+      if (Rtc.GetDateTime().Minute() >= 30) {}
        Serial.println(":хуйЬ");
      }
 }
