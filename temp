@@ -1,0 +1,40 @@
+Button Set pushes:
+1. Turn backlight on and show clock (SMode = 0)
+2. Go the menu and choose mode 1 (SMode = 1)
+3. Choose mode 2 (SMode = 2)
+4. Choose mode 3 (SMode = 3)
+5. Choose mode 4 (SMode = 4)
+6. Show clock (SMode = 0)
+
+if (btnSet == HIGH) {
+		SMode = 1;
+		lcd.clear();  
+	}
+
+while(SMode1 == 1){
+
+Button Select
+bool buttonPress = false; ?
+
+//Mode 1, VEGA:
+  if ((Hour >= 0) && (Hour <= 18)) {
+    pinRelay(HIGH);
+  }
+  else {
+    pinRelay(LOW);
+  }
+  
+//Mode 2, BLOOM:
+hOn1 = 0;
+mOn1 = 0;
+hOff1 = 12;
+mOff1 = 0;
+  if (Hour == hOn1 && Min == mOn1) {
+    pinRelay(HIGH);
+  }
+  
+  if (Hour == hOff1 && Min == mOff1) {
+    pinRelay(LOW);
+  }
+  
+  if (dd < 10) lcd.print('0');
