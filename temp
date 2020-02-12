@@ -1,76 +1,34 @@
-Button Set pushes:
-1. Turn backlight on and show clock (SMode = 0)
-2. Go the menu and choose mode 1 (SMode = 1)
-3. Choose mode 2 (SMode = 2)
-4. Choose mode 3 (SMode = 3)
-5. Choose mode 4 (SMode = 4)
-6. Show clock (SMode = 0)
-
-if (btnSet == HIGH) {
-		SMode = 1;
-		lcd.clear();  
-	}
-
-while(SMode1 == 1){
-
-Button Select
-bool buttonPress = false; ?
-
-//Mode 1, VEGA:
-  if ((Hour >= 0) && (Hour <= 18)) {
-    pinRelay(HIGH);
-  }
-  else {
-    pinRelay(LOW);
-  }
-  
-//Mode 2, BLOOM:
-hOn1 = 0;
-mOn1 = 0;
-hOff1 = 12;
-mOff1 = 0;
-  if (Hour == hOn1 && Min == mOn1) {
-    pinRelay(HIGH);
-  }
-  
-  if (Hour == hOff1 && Min == mOff1) {
-    pinRelay(LOW);
-  }
-  
-  if (dd < 10) lcd.print('0');
-12/2
-//RTC-based timer by uncle Lyozha.
+//Grow timer with RTC.
+//by uncle Lyozha.
 //Connections:
 //DS1302:  CE -> D2, I/O -> D3, SCLK -> D4.
-//Buttons on D8-11, grounded through 1 kOhm resistors. Buzzer on D6.
+//Buttons on D8-9, grounded through 1 kOhm resistors.
 //LCD through I2C: SDA -> A4, SCL -> A5.
 
 #include <DS1302.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-//Set the LCD address to 0x27 for a 16 chars and 2 line display
+// Set the LCD address to 0x27 for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-//We will keep current time here
-int Hour;
-int Min;
-
-//Assign pins for buttons: set, hour, minute, exit
-int pinChoose = 8;
+// Assign pins for buttons: mode, set
+int pinMode = 8;
 int pinSet = 9;
 
-//Button variables to store the read value from button's pin
-int btnChoose = 0;
+// Button variables to store the read value from button's pin
+int btnMode = 0;
 int btnSet = 0;
 
-//Clock's mode, 0 shows time, other values for setting timers
-int SMode = 0;
-int Timer = 0;
+int TMode = 0; // Timer mode - clock or menu
+int SMode = 0; // Stage mode - vega or bloom
 int Counter = 0;
 
-//Time variable
+// Time variable
 Time t;
+// We will keep current time here
+int Hour;
+int Min;
 
 // Init the DS1302
 DS1302 rtc(2, 3, 4);
@@ -99,50 +57,74 @@ void loop()
   t = rtc.getTime();
   Hour = t.hour;
   Min = t.min;
-//Here we read signals from buttons and assign them to variables
-	btnChoose = digitalRead(pinChoose);
+  
+// Here we read signals from buttons and assign them to variables
+	btnMode = digitalRead(pinMode);
   btnSet = digitalRead(pinSet);
 
-// Define clock mode
-	if (SMode == 0) {
-
+// Mode 0 clock when stage VEGA choosen
+	if (TMode == 0) {
 // Display time starting from 5th position of 0 line
 		lcd.setCursor(5, 0);
 		lcd.print(rtc.getTimeStr());
-// Display date on the 1 line
 		lcd.setCursor(0, 1);
 		lcd.print(rtc.getDateStr());
-    // lcd.setCursor(12,1);
-		// lcd.print("VEGA");
-	}
-
-//When the signal is high we switch to setting mode 1 and clear the display
-	if (btnChoose == HIGH) {
-		Counter++;
   }
 
-//While we still in the setting mode 1 we set the timer 1
-	while(SMode == 1){
-
-//Marking signs
-		lcd.setCursor(0,0);
+// Increment counter if button mode pushed
+	if (btnMode == HIGH) {
+		Counter++;
+		lcd.clear();
+  }
+	
+// When we are in the menu
+	while (Mode == 1) {
+// Showing the menu
+		lcd.setCursor(1,0);
 		lcd.print("1VEGA");
-		lcd.setCursor(0,1);
+		lcd.setCursor(1,1);
 		lcd.print("2BLOOM");
 		lcd.setCursor(8,0);
 		lcd.print("3****");
 		lcd.setCursor(8,1);
 		lcd.print("4****");
+	}
 
-		if (btnSet == HIGH){
-      if ((Hour >= 21) && (Hour < 22)) {
-        Serial.println("High!");
-      }
-      else {
-        Serial.println("Low!");
-      }
-      SMode = 0;
-      lcd.clear();
+// Stage mode 0 VEGA
+	while (SMode == 0) {
+		if ((Hour >= 0) && (Hour < 18)) {
+      Serial.println("High!");
     }
-  }
+    else {
+      Serial.println("Low!");
+    }
+	}
+// Adding an indicator to clock mode 0
+	while ((TMode == 0) && (SMode == 0)){
+		lcd.setCursor(12,1);
+		lcd.print("VEGA");
+	}
+	
+// Stage mode 1 BLOOM
+	while (SMode == 1) {
+		if ((Hour >= 0) && (Hour < 12)) {
+			Serial.println("High!");
+		}
+		else {
+			Serial.println("Low!");
+		}
+	}
+// Adding an indicator to clock mode 0
+	while ((TMode == 0) && (SMode == 1)){
+		lcd.setCursor(11,1);
+		lcd.print("BLOOM");
+	
+	while ((Mode == 1) && (Counter == 1)) {
+		lcd.setCursor(0,0);
+		lcd.blink();
+		if (btnSet == HIGH){
+			
+		}
+	}
+	
 }
