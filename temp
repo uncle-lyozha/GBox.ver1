@@ -13,7 +13,7 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Assign pins for buttons: mode, set
-int pinMode = 8;
+int pinBtnMode = 8;
 int pinSet = 9;
 
 // Button variables to store the read value from button's pin
@@ -26,7 +26,7 @@ int Counter = 0;
 
 // Time variable
 Time t;
-// We will keep current time here
+// We will keep current time here for convinience
 int Hour;
 int Min;
 
@@ -57,30 +57,49 @@ void loop()
   t = rtc.getTime();
   Hour = t.hour;
   Min = t.min;
-  
+
 // Here we read signals from buttons and assign them to variables
-	btnMode = digitalRead(pinMode);
+	btnMode = digitalRead(pinBtnMode);
   btnSet = digitalRead(pinSet);
 
+// // Increment counter if button mode pushed
+//  if (btnMode == HIGH) {
+// 		Counter++;
+// 		lcd.clear();
+//   }
+
 // Mode 0 clock when stage VEGA choosen
-	if (TMode == 0) {
-// Display time starting from 5th position of 0 line
+	while ((TMode == 0) && (SMode == 0)) {
 		lcd.setCursor(5, 0);
 		lcd.print(rtc.getTimeStr());
 		lcd.setCursor(0, 1);
 		lcd.print(rtc.getDateStr());
+    lcd.setCursor(12,1);
+  	lcd.print("VEGA");
+    if (btnMode == HIGH) {
+      TMode = 1;
+      lcd.clear();
+      Serial.print("check");
+    }
   }
 
-// Increment counter if button mode pushed
-	if (btnMode == HIGH) {
-		Counter++;
-		lcd.clear();
+// Mode 0 clock when stage BLOOM choosen
+	while ((TMode == 0) && (SMode == 1)) {
+		lcd.setCursor(5, 0);
+		lcd.print(rtc.getTimeStr());
+		lcd.setCursor(0, 1);
+		lcd.print(rtc.getDateStr());
+    lcd.setCursor(11,1);
+  	lcd.print("BLOOM");
+    if (btnMode == HIGH) {
+      TMode = 1;
+      lcd.clear();
+    }
   }
-	
-// When we are in the menu
-	while (Mode == 1) {
-// Showing the menu
-		lcd.setCursor(1,0);
+
+// Mode 1, menu when stage BLOOM choosen
+	while ((TMode == 1) && (SMode == 1)) {
+    lcd.setCursor(1,0);
 		lcd.print("1VEGA");
 		lcd.setCursor(1,1);
 		lcd.print("2BLOOM");
@@ -88,7 +107,39 @@ void loop()
 		lcd.print("3****");
 		lcd.setCursor(8,1);
 		lcd.print("4****");
-	}
+    lcd.setCursor(0,1);
+    lcd.blink();
+    if (btnSet == HIGH) {
+      TMode = 0;
+      lcd.clear();
+    }
+    if (btnMode == HIGH) {
+      TMode = 0;
+      lcd.clear();
+    }
+  }
+
+// Mode 1, menu when stage GROW choosen
+	while ((TMode == 1) && (SMode == 0)) {
+    lcd.setCursor(1,0);
+		lcd.print("1VEGA");
+		lcd.setCursor(1,1);
+		lcd.print("2BLOOM");
+		lcd.setCursor(8,0);
+		lcd.print("3****");
+		lcd.setCursor(8,1);
+		lcd.print("4****");
+    lcd.setCursor(0,0);
+    lcd.blink();
+    if (btnSet == HIGH) {
+      TMode = 0;
+      lcd.clear();
+    }
+    if (btnMode == HIGH) {
+      SMode = 1;
+      lcd.clear();
+    }
+  }
 
 // Stage mode 0 VEGA
 	while (SMode == 0) {
@@ -99,12 +150,7 @@ void loop()
       Serial.println("Low!");
     }
 	}
-// Adding an indicator to clock mode 0
-	while ((TMode == 0) && (SMode == 0)){
-		lcd.setCursor(12,1);
-		lcd.print("VEGA");
-	}
-	
+
 // Stage mode 1 BLOOM
 	while (SMode == 1) {
 		if ((Hour >= 0) && (Hour < 12)) {
@@ -114,17 +160,4 @@ void loop()
 			Serial.println("Low!");
 		}
 	}
-// Adding an indicator to clock mode 0
-	while ((TMode == 0) && (SMode == 1)){
-		lcd.setCursor(11,1);
-		lcd.print("BLOOM");
-	
-	while ((Mode == 1) && (Counter == 1)) {
-		lcd.setCursor(0,0);
-		lcd.blink();
-		if (btnSet == HIGH){
-			
-		}
-	}
-	
 }
